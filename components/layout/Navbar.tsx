@@ -7,12 +7,15 @@ export function Navbar() {
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link
           href="/"
-          className="flex items-center gap-2 font-bold text-slate-900"
+          className="flex items-center gap-2.5"
+          aria-label="SpecForge — início"
         >
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-brand-600 text-sm font-bold tracking-tight text-white">
-            SF
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/specforge-icon.png" alt="" className="h-9 w-auto" />
+          <span className="text-2xl font-extrabold tracking-tight">
+            <span className="text-slate-900">spec</span>
+            <span className="text-violet-500">forge</span>
           </span>
-          <span>SpecForge</span>
         </Link>
 
         <div className="flex items-center gap-4">
