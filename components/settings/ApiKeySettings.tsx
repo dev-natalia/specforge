@@ -94,15 +94,11 @@ export function ApiKeySettings({ onChange }: ApiKeySettingsProps = {}) {
           <div className="space-y-2 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-500">
             <p>
               🔒 A chave fica <strong>só neste navegador</strong> (não é gravada
-              no nosso banco).
+              em lugar nenhum do nosso lado).
             </p>
             <p>
-              A cada geração ela <strong>passa pelo nosso servidor</strong>,
-              porque é lá que a chamada à Anthropic acontece — necessário para
-              manter os prompts e a sanitização do lado seguro. No servidor ela é
-              usada <strong>de forma transitória</strong> (só para fazer a
-              chamada) e <strong>nunca é registrada em log</strong> nem
-              persistida.
+              A geração acontece <strong>direto do seu navegador</strong> para a
+              Anthropic — a chave <strong>não passa por nenhum servidor nosso</strong>.
             </p>
           </div>
 
