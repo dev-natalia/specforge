@@ -4,10 +4,10 @@
 
 # SpecForge
 
-**Especifique. Forje. Gere.**
+**Knowledge First. Specs, harness e tasks derivam do conhecimento.**
 
-Gere _specs_ (Spec-Driven Development) e _harness_ (Harness Engineering) para
-seus agentes de IA — direto no navegador, com a sua própria chave da Anthropic.
+Preserve o conhecimento do seu projeto e transforme-o em specs, harness e tasks
+rastreáveis — direto no navegador, local-first, com a sua própria chave da Anthropic.
 
 </div>
 
@@ -15,42 +15,57 @@ seus agentes de IA — direto no navegador, com a sua própria chave da Anthropi
 
 ## O que é
 
-O **SpecForge** guia você por um wizard e, a partir das informações do seu
-projeto, gera:
+O **SpecForge** trata **conhecimento como o ativo primário**. Specs, harness e
+tasks são artefatos _derivados e rastreáveis_. O fluxo é:
 
-- **Specs (SDD):** `spec.md`, `requirements.md`, `design.md`, `tasks.md`
-- **Harness:** `CLAUDE.md`, `AGENTS.md` (com papéis implementador/validador),
-  configs de lint, CI, testes estruturais, `PROGRESS.md` e script de bootstrap
+```
+Intenção → Clarificação → Conhecimento → Specs → Harness → Tasks → Código
+```
 
-O resultado é um `.zip` pronto para jogar no seu repositório e usar com qualquer
-agente de IA (Claude Code, Cursor, Copilot, etc).
+No **workspace** (`/projects`) você:
+
+- **Captura conhecimento durável:** Discoveries, Decisions (com racional),
+  Product DNA e Constraints — nada some no chat.
+- **Clarifica:** a IA levanta as lacunas priorizadas; as respostas viram conhecimento.
+- **Gera specs em cascata:** Requisitos → Design → Arquitetura → Contratos →
+  Edge Cases → Segurança → Testes, cada uma rastreável às suas origens.
+- **Gera o harness** (provider-neutro) e os **4 artefatos de saída**:
+  `CLAUDE.md`, `.cursor/rules`, `GPT_INSTRUCTIONS.md`, `GEMINI_INSTRUCTIONS.md`.
+- **Gera tasks** (grafo com dependências e critérios de aceite).
+- **Exporta** tudo num `.zip` (com `specforge.json` para reimportar).
 
 ## Como funciona
 
-- 🧊 **100% estático** — `next build` (`output: "export"`) gera arquivos
-  estáticos. Sem backend, banco, login ou variáveis de ambiente.
-- 🔑 **BYOK (Bring Your Own Key)** — a geração roda **no seu navegador**: o
-  browser chama a API da Anthropic direto, com a sua chave. Sem servidor no meio
-  (logo, **sem timeout** — a geração pode levar o tempo que precisar).
-- 🔒 **Privado** — a chave fica só no `localStorage` do seu navegador. **Nunca**
-  passa por um servidor nosso, nem é gravada ou logada.
+- 🧊 **100% estático** — `next build` (`output: "export"`). Sem backend, banco,
+  login ou variáveis de ambiente.
+- 🗃️ **Local First** — projetos vivem no **IndexedDB** do navegador, versionados,
+  com export/import como arquivos. O conhecimento é seu.
+- 🔑 **BYOK** — a geração roda **no seu navegador**: o browser chama a Anthropic
+  direto, com a sua chave. Sem servidor no meio (logo, **sem timeout**).
+- 🔒 **Privado** — a chave fica só no `localStorage`. **Nunca** passa por um
+  servidor nosso.
 
-> Modelo usado: **Claude Opus 4.8** (`claude-opus-4-8`).
+> Modelo de geração: **Claude Opus 4.8** (`claude-opus-4-8`).
 
-## Recursos
+## Arquitetura (camadas)
 
-- Wizard de 7 etapas com validação e barra de progresso
-- **Clarificação:** a IA levanta as ambiguidades que ficaram em aberto
-- **Tópicos adicionais** livres para o que não couber nos campos padrão
-- Preview dos arquivos com syntax highlighting (Shiki)
-- **Análise de consistência** entre specs e harness
-- Download do `.zip` montado no navegador
-- Documentação embutida (`/docs`): SDD, Harness Engineering e guia campo-a-campo
+- **Domínio** (`lib/domain/`) — objetos de conhecimento, specs, harness, tasks,
+  IDs rastreáveis (`DISC-`, `DEC-`, `SPEC-`…) e checagem de integridade de
+  rastreabilidade.
+- **Storage** (`lib/storage/`) — repositório local-first (IndexedDB versionado +
+  histórico) e export/import.
+- **Providers** (`lib/providers/`) — abstração de geração (Anthropic, BYOK) +
+  adapters de saída puros (Claude/Cursor/GPT/Gemini).
+- **Engine** (`lib/engine/`) — clarificação, geração de conhecimento, specs em
+  cascata, harness, tasks e quality gates.
+- **Plugins** (`lib/plugins/`) — registry in-process (tipos de spec, validators,
+  providers, adapters): núcleo fechado para modificação, aberto para extensão.
+- **Workspace** (`lib/workspace/` + `components/workspace/`) — store Zustand e UI.
 
 ## Stack
 
 Next.js 14 (App Router, export estático) · TypeScript · Tailwind CSS ·
-`@anthropic-ai/sdk` (no cliente) · JSZip · Shiki · Zustand
+`@anthropic-ai/sdk` (no cliente) · `idb` (IndexedDB) · Zod · JSZip · Shiki · Zustand
 
 ## Rodando localmente
 
@@ -70,7 +85,7 @@ npm run build   # gera a pasta out/ (site estático)
 ```
 
 Hospede o conteúdo de `out/` em qualquer host estático (Vercel, Cloudflare
-Pages, GitHub Pages, Netlify). Passo a passo em **[DEPLOY.md](DEPLOY.md)**.
+Pages, GitHub Pages, Netlify).
 
 ## Scripts
 
@@ -82,27 +97,10 @@ Pages, GitHub Pages, Netlify). Passo a passo em **[DEPLOY.md](DEPLOY.md)**.
 | `npm run lint`      | ESLint                             |
 | `npm run typecheck` | Checagem de tipos (TypeScript)     |
 
-## Estrutura
-
-```
-app/          # páginas (landing, docs, /new, /settings)
-components/   # layout, ui, wizard, preview, settings
-lib/
-  ai/         # prompts + geração (roda no cliente) + sanitização
-  zip/        # geração do .zip
-  wizard/     # store Zustand
-  byok.ts     # chave do usuário (localStorage)
-specs/        # specs SDD do próprio projeto
-```
-
-Para agentes de IA trabalhando neste repositório, o guia principal é o
-[`CLAUDE.md`](CLAUDE.md).
-
 ## Privacidade & Segurança
 
 - A chave da Anthropic é **sua** e fica **só no seu navegador**.
-- A geração é uma chamada direta **navegador → Anthropic** — nada de chaves ou
-  prompts passando por um servidor de terceiros.
-- Inputs livres são sanitizados antes de montar os prompts (anti prompt
-  injection); o `.zip` é montado removendo path traversal (anti zip-slip).
+- A geração é uma chamada direta **navegador → Anthropic**.
+- Conteúdo do usuário é tratado como **dado** nos prompts (anti prompt injection);
+  o `.zip` remove path traversal (anti zip-slip).
 - Use sempre via **HTTPS** em produção.
