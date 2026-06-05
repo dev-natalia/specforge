@@ -20,6 +20,12 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <Link
+            href="/projects"
+            className="text-sm font-medium text-slate-600 hover:text-slate-900"
+          >
+            Projetos
+          </Link>
+          <Link
             href="/docs"
             className="text-sm font-medium text-slate-600 hover:text-slate-900"
           >
@@ -31,8 +37,8 @@ export function Navbar() {
           >
             Configurações
           </Link>
-          <Link href="/new">
-            <Button size="sm">Novo projeto</Button>
+          <Link href="/projects">
+            <Button size="sm">Abrir workspace</Button>
           </Link>
         </div>
       </nav>

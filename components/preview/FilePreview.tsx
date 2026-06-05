@@ -7,9 +7,11 @@ import { FileViewer } from "@/components/preview/FileViewer";
 
 interface FilePreviewProps {
   files: GeneratedFile[];
+  // Quando fornecido, habilita edição: chamado ao salvar o conteúdo do arquivo.
+  onSaveFile?: (file: GeneratedFile, content: string) => void;
 }
 
-export function FilePreview({ files }: FilePreviewProps) {
+export function FilePreview({ files, onSaveFile }: FilePreviewProps) {
   const [activePath, setActivePath] = useState<string | null>(
     files[0]?.path ?? null,
   );
@@ -38,7 +40,14 @@ export function FilePreview({ files }: FilePreviewProps) {
         activePath={activeFile?.path ?? null}
         onSelect={setActivePath}
       />
-      {activeFile && <FileViewer file={activeFile} />}
+      {activeFile && (
+        <FileViewer
+          file={activeFile}
+          onSave={
+            onSaveFile ? (content) => onSaveFile(activeFile, content) : undefined
+          }
+        />
+      )}
     </div>
   );
 }

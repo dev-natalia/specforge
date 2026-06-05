@@ -12,7 +12,7 @@ import {
   clearStoredKey,
   looksLikeAnthropicKey,
 } from "@/lib/byok";
-import { validateAnthropicKey } from "@/lib/api-client";
+import { anthropicProvider } from "@/lib/providers/anthropic";
 
 function maskKey(key: string): string {
   if (key.length <= 12) return "sk-ant-••••";
@@ -49,7 +49,7 @@ export function ApiKeySettings({ onChange }: ApiKeySettingsProps = {}) {
     }
     setTesting(true);
     try {
-      await validateAnthropicKey(key);
+      await anthropicProvider.validateKey(key);
       setStoredKey(key);
       setStored(key);
       setInput("");
