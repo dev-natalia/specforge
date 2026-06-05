@@ -4,31 +4,31 @@ import { Card, CardContent } from "@/components/ui/Card";
 
 const STEPS = [
   {
-    title: "1. Descreva o projeto",
-    body: "Preencha um wizard guiado com stack, arquitetura e comportamento esperado.",
+    title: "1. Capture conhecimento",
+    body: "Descreva a intenção; a IA levanta clarificações e transforma respostas em discoveries e decisões duráveis.",
   },
   {
-    title: "2. Gere specs e harness",
-    body: "A IA cria specs (SDD) e o harness (CLAUDE.md, configs, hooks) prontos para uso.",
+    title: "2. Gere specs em cascata",
+    body: "Requisitos → Design → Arquitetura → Contratos → Edge Cases → Segurança → Testes, tudo rastreável ao conhecimento.",
   },
   {
-    title: "3. Baixe o .zip",
-    body: "Receba toda a estrutura de arquivos para jogar direto no seu repositório.",
+    title: "3. Harness e tasks",
+    body: "Gere o harness, os artefatos por agente (CLAUDE.md, .cursor/rules, GPT, Gemini) e o grafo de tasks. Exporte o .zip.",
   },
 ];
 
 const FEATURES = [
   {
-    title: "Spec-Driven Development",
-    body: "spec.md, requirements.md, design.md e tasks.md gerados a partir do seu contexto.",
+    title: "Knowledge First",
+    body: "Conhecimento é o ativo durável. Specs, harness e tasks são artefatos derivados e rastreáveis.",
   },
   {
-    title: "Harness Engineering",
-    body: "Guias e sensores que dão estrutura e confiança ao trabalho com agentes de IA.",
+    title: "Local First",
+    body: "Seus projetos vivem no navegador (IndexedDB), versionados. Exporte e reimporte como arquivos.",
   },
   {
-    title: "Compatível com qualquer agente",
-    body: "Output funciona com Claude Code, Cursor, Copilot e outros.",
+    title: "Provider-agnóstico",
+    body: "Um harness, quatro saídas: Claude, Cursor, GPT e Gemini.",
   },
   {
     title: "Sua chave, sem limites",
@@ -45,15 +45,15 @@ export default function LandingPage() {
             Especifique. Forje. Gere.
           </p>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            Specs e harness para seus agentes de IA, em minutos
+            Conhecimento durável para seus agentes de IA
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-            O SpecForge gera specs no formato Spec-Driven Development e um harness
-            pronto para uso. Baixe um .zip e comece a trabalhar com agentes de IA
-            com estrutura e confiança.
+            O SpecForge preserva o conhecimento do seu projeto e o transforma em
+            specs, harness e tasks rastreáveis — o contexto que faz a IA gerar
+            código consistente. Local-first, com a sua chave.
           </p>
           <div className="mt-8 flex justify-center gap-3">
-            <Link href="/new">
+            <Link href="/projects">
               <Button size="lg">Começar agora</Button>
             </Link>
             <Link href="/docs">
