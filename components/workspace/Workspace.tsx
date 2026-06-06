@@ -49,15 +49,27 @@ const KNOWLEDGE_INTRO: Partial<Record<TabKey, string>> = {
     "A identidade do projeto: missão, público, princípios e não-objetivos. Governa specs e harness.",
 };
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "clarify", label: "Clarificação" },
-  { key: "discovery", label: "Discoveries" },
-  { key: "decision", label: "Decisões" },
-  { key: "productDna", label: "Product DNA" },
-  { key: "constraint", label: "Constraints" },
-  { key: "specs", label: "Specs" },
-  { key: "harness", label: "Harness" },
-  { key: "tasks", label: "Tasks" },
+// Abas agrupadas por natureza: o que é PREENCHÍVEL (conhecimento) vs. o que é
+// GERÁVEL (saídas finais geradas pela IA). Tudo em português.
+const TAB_GROUPS: { label: string; tabs: { key: TabKey; label: string }[] }[] = [
+  {
+    label: "Conhecimento",
+    tabs: [
+      { key: "clarify", label: "Clarificação" },
+      { key: "discovery", label: "Descobertas" },
+      { key: "decision", label: "Decisões" },
+      { key: "productDna", label: "DNA do Produto" },
+      { key: "constraint", label: "Restrições" },
+    ],
+  },
+  {
+    label: "Geração",
+    tabs: [
+      { key: "specs", label: "Especificações" },
+      { key: "harness", label: "Harness" },
+      { key: "tasks", label: "Tarefas" },
+    ],
+  },
 ];
 
 interface EditorState {
@@ -128,6 +140,15 @@ export function Workspace({ projectId }: { projectId: string }) {
   const report = qualityReport();
   const failingGates = report?.results.filter((r) => r.outcome !== "pass") ?? [];
 
+  // Só há o que baixar quando o projeto tem algum conteúdo gerado/registrado.
+  const hasContent =
+    snapshot.knowledge.length > 0 ||
+    snapshot.specifications.length > 0 ||
+    snapshot.consolidatedSpecs.length > 0 ||
+    snapshot.harnesses.length > 0 ||
+    snapshot.tasks.length > 0 ||
+    snapshot.providerArtifacts.length > 0;
+
   async function handleSubmit(data: Record<string, unknown>) {
     if (!editor) return;
     setSaving(true);
@@ -169,33 +190,35 @@ export function Workspace({ projectId }: { projectId: string }) {
   return (
     <div className="space-y-6">
       {/* Cabeçalho do projeto */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-slate-400">{snapshot.project.id}</span>
-            {issues.length === 0 ? (
-              <Badge variant="success">Rastreabilidade ok</Badge>
-            ) : (
-              <Badge variant="warning">{issues.length} alerta(s)</Badge>
-            )}
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900">{snapshot.project.name}</h1>
-          {snapshot.project.description && (
-            <p className="text-sm text-slate-500">{snapshot.project.description}</p>
+      <div>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs text-slate-400">{snapshot.project.id}</span>
+          {issues.length === 0 ? (
+            <Badge variant="success">Rastreabilidade ok</Badge>
+          ) : (
+            <Badge variant="warning">{issues.length} alerta(s)</Badge>
           )}
         </div>
-        <div className="flex gap-2">
-          <Link href="/projects">
-            <Button variant="ghost" size="sm">Projetos</Button>
-          </Link>
-          <Button variant="outline" size="sm" onClick={() => void downloadProjectZip(snapshot)}>
-            Exportar .zip
-          </Button>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900">{snapshot.project.name}</h1>
+        {snapshot.project.description && (
+          <p className="text-sm text-slate-500">{snapshot.project.description}</p>
+        )}
       </div>
 
-      {/* Iniciativas (V3): scope por iniciativa */}
-      <InitiativesBar snapshot={snapshot} />
+      {/* Iniciativas (esquerda) + baixar projeto (direita) */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <InitiativesBar snapshot={snapshot} />
+        </div>
+        <Button
+          className="shrink-0"
+          onClick={() => void downloadProjectZip(snapshot)}
+          disabled={!hasContent}
+          title={hasContent ? undefined : "Gere algo para poder baixar"}
+        >
+          ⬇ Baixar projeto (.zip)
+        </Button>
+      </div>
 
       {!view ? (
         snapshot.initiatives.length > 0 ? (
@@ -227,25 +250,33 @@ export function Workspace({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      {/* Abas */}
-      <div className="flex flex-wrap gap-1 border-b border-slate-200">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => {
-              setTab(t.key);
-              setEditor(null);
-              setOpenCardId(null);
-            }}
-            className={
-              "border-b-2 px-3 py-2 text-sm font-medium transition-colors " +
-              (tab === t.key
-                ? "border-brand-500 text-brand-700"
-                : "border-transparent text-slate-500 hover:text-slate-800")
-            }
-          >
-            {t.label}
-          </button>
+      {/* Abas, agrupadas: Conhecimento (preenchível) · Geração (gerável) */}
+      <div className="flex flex-wrap items-end gap-x-3 gap-y-2 border-b border-slate-200">
+        {TAB_GROUPS.map((group, gi) => (
+          <div key={group.label} className="flex flex-wrap items-end gap-1">
+            {gi > 0 && <span className="mx-1 mb-2 h-5 w-px bg-slate-200" aria-hidden />}
+            <span className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              {group.label}
+            </span>
+            {group.tabs.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => {
+                  setTab(t.key);
+                  setEditor(null);
+                  setOpenCardId(null);
+                }}
+                className={
+                  "border-b-2 px-3 py-2 text-sm font-medium transition-colors " +
+                  (tab === t.key
+                    ? "border-brand-500 text-brand-700"
+                    : "border-transparent text-slate-500 hover:text-slate-800")
+                }
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         ))}
       </div>
 
