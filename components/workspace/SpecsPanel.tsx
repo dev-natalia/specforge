@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { FilePreview } from "@/components/preview/FilePreview";
 import { OpenQuestionsPanel } from "@/components/workspace/OpenQuestionsPanel";
+import { PanelIntro } from "@/components/workspace/PanelIntro";
 import {
   SPEC_CASCADE,
   SPEC_LABEL,
@@ -112,6 +113,12 @@ export function SpecsPanel({ snapshot }: { snapshot: ProjectSnapshot }) {
 
   return (
     <div className="space-y-6">
+      <PanelIntro>
+        Especificações derivadas do conhecimento, rastreáveis às origens. Em Story/Feature
+        é um <strong>documento único</strong> consolidado; em Product, a <strong>cascata
+        por-tipo</strong> (requisitos → design → … → testes).
+      </PanelIntro>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">
           Specs derivam do conhecimento, em cascata e rastreáveis.

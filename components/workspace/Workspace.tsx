@@ -13,6 +13,7 @@ import { KnowledgeCard } from "@/components/workspace/KnowledgeCard";
 import { InitiativesBar } from "@/components/workspace/InitiativesBar";
 import { GenerationFeedback } from "@/components/workspace/GenerationFeedback";
 import { GenerationStatus } from "@/components/workspace/GenerationStatus";
+import { PanelIntro } from "@/components/workspace/PanelIntro";
 import { ClarifyPanel } from "@/components/workspace/ClarifyPanel";
 import { SpecsPanel } from "@/components/workspace/SpecsPanel";
 import { HarnessPanel } from "@/components/workspace/HarnessPanel";
@@ -35,6 +36,18 @@ type TabKey =
   | "specs"
   | "harness"
   | "tasks";
+
+// Intro "O que é isso?" das abas de conhecimento (as demais têm o seu no painel).
+const KNOWLEDGE_INTRO: Partial<Record<TabKey, string>> = {
+  discovery:
+    'Aprendizados do projeto — "o que descobrimos?". São a origem de boa parte das decisões e specs.',
+  decision:
+    "Escolhas do projeto com o porquê preservado — para não relitigar nem perder o racional.",
+  constraint:
+    "Limites inegociáveis (técnicos, de negócio, de produto). Viram regras no harness.",
+  productDna:
+    "A identidade do projeto: missão, público, princípios e não-objetivos. Governa specs e harness.",
+};
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "clarify", label: "Clarificação" },
@@ -247,6 +260,7 @@ export function Workspace({ projectId }: { projectId: string }) {
         <TasksPanel snapshot={view} />
       ) : tab === "productDna" ? (
         <div className="space-y-4">
+          <PanelIntro>{KNOWLEDGE_INTRO.productDna}</PanelIntro>
           {editor?.kind === "productDna" ? (
             <div ref={formRef} className="rounded-lg border border-slate-200 bg-white p-5">{renderForm()}</div>
           ) : productDna ? (
@@ -266,6 +280,7 @@ export function Workspace({ projectId }: { projectId: string }) {
         </div>
       ) : (
         <div className="space-y-4">
+          <PanelIntro>{KNOWLEDGE_INTRO[tab]}</PanelIntro>
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-500">{items.length} item(ns)</p>
             {!editor && (

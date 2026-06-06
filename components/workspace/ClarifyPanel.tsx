@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { Textarea } from "@/components/ui/Textarea";
+import { PanelIntro } from "@/components/workspace/PanelIntro";
 import type { ProjectSnapshot } from "@/lib/domain/project";
 import type { ClarificationPriority } from "@/lib/domain/clarification";
 import { CLARIFICATION_BUDGET, SCOPE_LABEL } from "@/lib/domain/scope";
@@ -110,6 +111,11 @@ export function ClarifyPanel({ snapshot }: { snapshot: ProjectSnapshot }) {
 
   return (
     <div className="space-y-6">
+      <PanelIntro>
+        A IA detecta lacunas, ambiguidades e contradições na sua intenção e levanta
+        perguntas priorizadas. Cada resposta vira conhecimento durável — nada some no chat.
+      </PanelIntro>
+
       {/* Intake */}
       <div className="rounded-lg border border-slate-200 bg-white p-5">
         <h3 className="font-medium text-slate-800">Intenção do projeto</h3>

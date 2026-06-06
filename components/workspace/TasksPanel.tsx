@@ -9,6 +9,7 @@ import { getStoredKey } from "@/lib/byok";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { PanelIntro } from "@/components/workspace/PanelIntro";
 import type { ProjectSnapshot } from "@/lib/domain/project";
 
 export function TasksPanel({ snapshot }: { snapshot: ProjectSnapshot }) {
@@ -40,6 +41,12 @@ export function TasksPanel({ snapshot }: { snapshot: ProjectSnapshot }) {
 
   return (
     <div className="space-y-5">
+      <PanelIntro>
+        O trabalho quebrado em <strong>unidades executáveis</strong>, com dependências,
+        critérios de aceite e rastreabilidade — derivadas das specs, prontas para um humano
+        ou agente executar.
+      </PanelIntro>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">
           Tasks executáveis derivadas das specs, com dependências e rastreabilidade.
