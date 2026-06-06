@@ -6,7 +6,7 @@ import type { ItemDoc } from "@/components/docs/ItemDoc";
 export const KNOWLEDGE_ITEMS: ItemDoc[] = [
   {
     id: "discovery",
-    name: "Discovery",
+    name: "Descoberta",
     idPrefix: "DISC-",
     answers: "O que aprendemos?",
     what: "Um aprendizado durável obtido em pesquisa, conversa, experimento ou feedback. É a origem da maioria das decisões — preserva o insight que motivou uma escolha.",
@@ -26,7 +26,7 @@ Implicações: padrões devem funcionar sem configuração.`,
   },
   {
     id: "decision",
-    name: "Decision",
+    name: "Decisão",
     idPrefix: "DEC-",
     answers: "O que escolhemos e por quê?",
     what: "Uma escolha do projeto com o raciocínio preservado: contexto, alternativas, tradeoffs e racional. Evita que decisões sejam relitigadas e que o 'porquê' se perca.",
@@ -48,7 +48,7 @@ Tradeoffs: setup inicial um pouco mais complexo.`,
   },
   {
     id: "productDna",
-    name: "Product DNA",
+    name: "DNA do Produto",
     idPrefix: "DNA-",
     answers: "Quem é o projeto?",
     what: "A identidade do projeto: missão, visão, problema, público, princípios, constraints e não-objetivos. É o objeto de mais alto nível — tudo abaixo deve se alinhar a ele.",
@@ -71,7 +71,7 @@ Não-objetivos: gerência de projetos; billing de IA.`,
   },
   {
     id: "constraint",
-    name: "Constraint",
+    name: "Restrição",
     idPrefix: "CONST-",
     answers: "Que limites existem?",
     what: "Um limite inegociável — técnico, de negócio ou de produto. Constraints não são obstáculos: são decisões de design que mantêm o projeto focado.",
@@ -87,7 +87,7 @@ Racional: portabilidade e propriedade do usuário; sem lock-in.`,
   },
   {
     id: "clarification",
-    name: "Clarification",
+    name: "Clarificação",
     idPrefix: "CLAR-",
     answers: "O que falta saber?",
     what: "Uma incerteza detectada antes da geração: lacuna, ambiguidade, contradição ou suposição oculta. A IA levanta perguntas priorizadas; a resposta vira conhecimento durável.",
@@ -112,7 +112,7 @@ Resposta: "IndexedDB local-first" → vira DEC-00X.`,
 export const SPEC_ITEMS: ItemDoc[] = [
   {
     id: "requirements",
-    name: "1. Requirements",
+    name: "1. Requisitos",
     idPrefix: "SPEC-",
     what: "O que o sistema deve fazer, do ponto de vista de produto/negócio. Base da cascata — todas as outras specs derivam dela.",
     fields: [
@@ -145,7 +145,7 @@ Draft → Pending → Paid → (Expired)`,
   },
   {
     id: "architecture",
-    name: "3. Architecture",
+    name: "3. Arquitetura",
     idPrefix: "ARCH-",
     what: "A estrutura técnica: componentes, responsabilidades, fronteiras de domínio, dados, integrações e comunicação.",
     fields: [
@@ -161,7 +161,7 @@ Draft → Pending → Paid → (Expired)`,
   },
   {
     id: "contracts",
-    name: "4. Contracts",
+    name: "4. Contratos",
     idPrefix: "CON-",
     what: "Os acordos de comunicação: APIs, eventos, comandos, queries, schemas, validações e erros. Implementação-independente.",
     fields: [
@@ -193,7 +193,7 @@ Mitigação: job de varredura + retry idempotente.`,
   },
   {
     id: "security",
-    name: "6. Security",
+    name: "6. Segurança",
     idPrefix: "SEC-",
     what: "O modelo de segurança: ativos, ameaças, trust boundaries, autenticação/autorização, proteção de dados e gestão de segredos.",
     fields: [
@@ -208,7 +208,7 @@ Mitigação: sempre filtrar por usuário dono do recurso.
   },
   {
     id: "testing",
-    name: "7. Testing",
+    name: "7. Testes",
     idPrefix: "TEST-",
     what: "A estratégia de validação: o que testar, como, e a matriz de rastreabilidade requisito → teste. Transforma expectativas em evidência.",
     fields: [
@@ -230,8 +230,8 @@ export const ARTIFACT_ITEMS: ItemDoc[] = [
     name: "Harness",
     idPrefix: "HAR-",
     answers: "Como a IA deve se comportar?",
-    what: "O ambiente operacional provider-neutro derivado do conhecimento + specs. Nove camadas (Identidade, Comportamento, Arquitetura, Segurança, Testes, Documentação, Qualidade, Revisão, Execução) + comportamentos proibidos.",
-    when: "Depois das specs. É a base de onde saem os artefatos por agente.",
+    what: "O ambiente operacional provider-neutro derivado do conhecimento + specs: as regras de como a IA deve agir neste projeto. Até nove camadas (Identidade, Comportamento, Arquitetura, Segurança, Testes, Documentação, Qualidade, Revisão, Execução) + comportamentos proibidos. É progressivo: as camadas ativas escalam com o scope (Story leve → Product completo).",
+    when: "Depois das specs. É a fonte de onde saem os arquivos de cada agente.",
     fields: [
       { name: "layers", desc: "regras por dimensão (identidade, segurança, testes…)" },
       { name: "prohibited", desc: "anti-padrões explícitos" },
@@ -240,6 +240,7 @@ export const ARTIFACT_ITEMS: ItemDoc[] = [
 Identidade: Local-first, BYOK, Free Forever.
 Segurança: validar toda entrada; nunca logar segredos.
 Proibido: inventar requisitos; ignorar a arquitetura.`,
+    tip: "O harness é a fonte provider-neutra; em \"Exportar para agentes\" ele vira CLAUDE.md, .cursor/rules, GPT e Gemini.",
   },
   {
     id: "agent-rules",
@@ -276,7 +277,7 @@ _Rastreabilidade: HAR-001_`,
   },
   {
     id: "task",
-    name: "Task",
+    name: "Tarefa",
     idPrefix: "TASK-",
     answers: "Como executar?",
     what: "A menor unidade de trabalho executável, derivada das specs. Carrega objetivo, dependências, critérios de aceite e expectativas de teste/segurança.",
@@ -289,7 +290,8 @@ _Rastreabilidade: HAR-001_`,
     example: `TASK-002 — Implementar POST /payments [feature]
 Depende de: TASK-001
 Critérios: cria cobrança PENDING; idempotência via header.
-Origens: SPEC-004 (Contracts), SPEC-001 (Requirements)`,
+Origens: SPEC-004 (Contratos), SPEC-001 (Requisitos)`,
+    tip: "A quantidade escala com o scope (Story poucas, Product muitas). Use \"Gerar mais tarefas\" para complementar sem substituir.",
   },
   {
     id: "quality-gates",

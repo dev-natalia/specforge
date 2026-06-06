@@ -2,14 +2,14 @@ import { DocTitle, Lead, H2, P, Callout, CodeBlock } from "@/components/docs/pri
 import { Card, CardContent } from "@/components/ui/Card";
 
 const STAGES: { n: string; title: string; body: string }[] = [
-  { n: "1", title: "Captura de intenção", body: "Você descreve o projeto em linguagem natural. Entrada bruta, ainda não estruturada." },
-  { n: "2", title: "Clarificação", body: "A IA detecta lacunas, ambiguidades e contradições e levanta perguntas priorizadas." },
-  { n: "3", title: "Conhecimento", body: "Respostas e descrição viram discoveries, decisões, Product DNA e constraints — a fonte de verdade." },
-  { n: "4", title: "Specs", body: "O conhecimento gera as 7 specs em cascata, cada uma rastreável às origens." },
-  { n: "5", title: "Harness", body: "As specs viram o ambiente operacional do agente (camadas + agent rules)." },
-  { n: "6", title: "Tasks", body: "As specs viram um grafo de tasks executáveis com dependências e critérios de aceite." },
-  { n: "7", title: "Adaptação de provider", body: "O harness é traduzido para CLAUDE.md, .cursor/rules, GPT e Gemini." },
-  { n: "8", title: "Entrega", body: "Tudo é exportado num .zip (com specforge.json para reimportar)." },
+  { n: "1", title: "Captura de intenção", body: "Você descreve o que quer construir, em linguagem natural. Entrada bruta, ainda não estruturada." },
+  { n: "2", title: "Scope", body: "A IA sugere o scope (Story, Feature ou Product); você confirma. Ele define a profundidade do processo." },
+  { n: "3", title: "Clarificação", body: "A IA detecta lacunas e ambiguidades e levanta perguntas — em quantidade proporcional ao scope." },
+  { n: "4", title: "Conhecimento", body: "Respostas e descrição viram descobertas, decisões, DNA do Produto e restrições — a fonte de verdade." },
+  { n: "5", title: "Specs", body: "O conhecimento gera as specs — documento consolidado (Story/Feature) ou cascata por-tipo (Product) — rastreáveis às origens." },
+  { n: "6", title: "Harness", body: "As specs viram o ambiente operacional do agente (camadas progressivas + agent rules)." },
+  { n: "7", title: "Tasks", body: "As specs viram um grafo de tarefas executáveis com dependências e critérios de aceite." },
+  { n: "8", title: "Exportar", body: "O harness é traduzido para CLAUDE.md, .cursor/rules, GPT e Gemini, e tudo sai num .zip (com specforge.json para reimportar)." },
 ];
 
 export default function FlowPage() {
@@ -47,6 +47,12 @@ export default function FlowPage() {
         estágio consome a saída do anterior e passa por um quality gate — geração
         sem validação é proibida.
       </P>
+      <Callout>
+        O pipeline é <strong>adaptativo</strong>: o scope define quanto dele roda. Uma
+        Story pula descoberta profunda, arquitetura e segurança; um Product roda tudo.
+        É o <strong>Progressive Specification</strong> — veja o Guia de uso e os Casos
+        de uso para o passo a passo por scope.
+      </Callout>
       <div className="grid gap-3">
         {STAGES.map((s) => (
           <Card key={s.n}>

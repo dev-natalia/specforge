@@ -74,11 +74,17 @@ export default function DocsOverviewPage() {
       </P>
       <CodeBlock>{`Ideia → Conhecimento → Specs → Harness → IA → Código`}</CodeBlock>
       <P>
-        O conhecimento (discoveries, decisões, Product DNA, constraints) vira a
+        O conhecimento (descobertas, decisões, DNA do Produto, restrições) vira a
         fonte de verdade. Specs, harness e tasks são artefatos derivados e
         rastreáveis. Cada decisão de implementação consegue ser explicada de volta
         ao conhecimento que a originou.
       </P>
+      <Callout>
+        E o processo se <strong>adapta ao tamanho do problema</strong> (Progressive
+        Specification): uma <strong>Story</strong> recebe um caminho leve; um{" "}
+        <strong>Product</strong>, o processo completo. Você não cria um produto inteiro
+        para adicionar um botão. Veja o <strong>Guia de uso</strong>.
+      </Callout>
 
       <H2 id="e">O que o SpecForge é</H2>
       <div className="grid gap-3 sm:grid-cols-2">
