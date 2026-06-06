@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { parseTaskDrafts } from "@/lib/engine/task-gen";
+import { parseTaskDrafts, buildTaskUserPrompt, TASK_COUNT } from "@/lib/engine/task-gen";
+import { emptySnapshot, type Project } from "@/lib/domain/project";
 
 describe("parseTaskDrafts", () => {
   it("parseia tasks com defaults e dependsOn", () => {
@@ -38,5 +39,38 @@ describe("parseTaskDrafts", () => {
 
   it("lança erro quando nada pôde ser recuperado", () => {
     expect(() => parseTaskDrafts("desculpe, não consigo")).toThrow();
+  });
+});
+
+describe("buildTaskUserPrompt", () => {
+  const project: Project = {
+    id: "PROJ-001",
+    name: "Demo",
+    slug: "demo",
+    description: "",
+    createdAt: "2026-06-05T00:00:00.000Z",
+    updatedAt: "2026-06-05T00:00:00.000Z",
+  };
+
+  it("usa a faixa de quantidade do scope", () => {
+    const story = buildTaskUserPrompt(emptySnapshot(project), { scope: "story" });
+    expect(story).toContain(`de ${TASK_COUNT.story.min} a ${TASK_COUNT.story.max} tasks`);
+    const product = buildTaskUserPrompt(emptySnapshot(project), { scope: "product" });
+    expect(product).toContain(`de ${TASK_COUNT.product.min} a ${TASK_COUNT.product.max} tasks`);
+  });
+
+  it("faixa cresce com o scope", () => {
+    expect(TASK_COUNT.story.max).toBeLessThan(TASK_COUNT.feature.max);
+    expect(TASK_COUNT.feature.max).toBeLessThan(TASK_COUNT.product.max);
+  });
+
+  it("no modo append, lista as tasks existentes para não repetir", () => {
+    const prompt = buildTaskUserPrompt(emptySnapshot(project), {
+      scope: "product",
+      existingTitles: ["Setup do projeto", "Modelar dados"],
+    });
+    expect(prompt).toContain("NÃO repita");
+    expect(prompt).toContain("Setup do projeto");
+    expect(prompt).toContain("Modelar dados");
   });
 });

@@ -78,9 +78,9 @@ import {
   PROVIDER_OUTPUT_PATH,
   type Provider,
 } from "@/lib/domain/harness";
-import { taskSchema } from "@/lib/domain/task";
+import { taskSchema, type Task } from "@/lib/domain/task";
 import { generateHarnessBundle } from "@/lib/engine/harness-gen";
-import { generateTaskDrafts } from "@/lib/engine/task-gen";
+import { generateTaskDrafts, type TaskDraft } from "@/lib/engine/task-gen";
 import { renderArtifact } from "@/lib/providers/adapters";
 import {
   appendFeedback,
@@ -116,6 +116,43 @@ function replaceForInitiative<T extends { initiativeId?: string }>(
   next: T[],
 ): T[] {
   return [...all.filter((a) => a.initiativeId !== initiativeId), ...next];
+}
+
+// Converte rascunhos de task em tasks duráveis: atribui IDs sequenciais (a
+// partir de `baseIds`, mantendo unicidade) e resolve `dependsOn` (índices no
+// lote → IDs). As dependências referenciam apenas tasks DO MESMO lote.
+function draftsToTasks(
+  drafts: TaskDraft[],
+  baseIds: string[],
+  specRefs: string[],
+  initiativeId: string,
+  now: string,
+): Task[] {
+  const ids: string[] = [];
+  for (let i = 0; i < drafts.length; i++) ids.push(nextId("task", [...baseIds, ...ids]));
+  return drafts.map((draft, i) => {
+    const dependencies = draft.dependsOn
+      .filter((idx) => idx >= 0 && idx < ids.length && idx !== i)
+      .map((idx) => ids[idx] as string);
+    return taskSchema.parse({
+      kind: "task",
+      id: ids[i],
+      initiativeId,
+      title: draft.title,
+      category: draft.category,
+      objective: draft.objective,
+      description: draft.description,
+      dependencies,
+      acceptanceCriteria: draft.acceptanceCriteria,
+      testingExpectations: draft.testingExpectations,
+      securityExpectations: draft.securityExpectations,
+      deliverables: draft.deliverables,
+      status: "pending",
+      traceRefs: specRefs,
+      createdAt: now,
+      updatedAt: now,
+    });
+  });
 }
 
 interface WorkspaceState {
@@ -189,8 +226,10 @@ interface WorkspaceState {
   generateHarness: (options: EngineOptions) => Promise<string | null>;
   // Renderiza os artefatos dos providers (transformação pura, sem IA/chave).
   generateProviderArtifacts: (providers: Provider[]) => Promise<void>;
-  // Gera o grafo de tasks a partir das specs.
+  // Gera o grafo de tasks a partir das specs (substitui as existentes).
   generateTasks: (options: EngineOptions) => Promise<number>;
+  // Gera tasks ADICIONAIS, complementares às existentes (append, sem substituir).
+  appendTasks: (options: EngineOptions) => Promise<number>;
 
   // Orquestrador (doc 017): roda o pipeline completo do scope numa ação só —
   // specs (consolidada p/ story/feature, cascata p/ product) → harness → tasks
@@ -924,7 +963,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const { snapshot } = get();
     if (!snapshot) return 0;
     const view = initiativeSnapshot(snapshot, initiative.id);
-    const drafts = await generateTaskDrafts(view, options);
+    // Quantidade proporcional ao scope (doc — Story poucas, Product muitas).
+    const drafts = await generateTaskDrafts(view, options, { scope: initiative.scope });
     const now = nowIso();
     // IDs em uso por outros artefatos (exclui as tasks da iniciativa, que serão
     // substituídas), para manter unicidade project-wide.
@@ -935,36 +975,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       ...view.specifications.map((s) => s.id),
       ...view.consolidatedSpecs.map((s) => s.id),
     ];
-
-    // Atribui IDs em ordem para resolver dependsOn (índices → IDs).
-    const ids: string[] = [];
-    for (let i = 0; i < drafts.length; i++) {
-      ids.push(nextId("task", [...baseIds, ...ids]));
-    }
-
-    const newTasks = drafts.map((draft, i) => {
-      const dependencies = draft.dependsOn
-        .filter((idx) => idx >= 0 && idx < ids.length && idx !== i)
-        .map((idx) => ids[idx] as string);
-      return taskSchema.parse({
-        kind: "task",
-        id: ids[i],
-        initiativeId: initiative.id,
-        title: draft.title,
-        category: draft.category,
-        objective: draft.objective,
-        description: draft.description,
-        dependencies,
-        acceptanceCriteria: draft.acceptanceCriteria,
-        testingExpectations: draft.testingExpectations,
-        securityExpectations: draft.securityExpectations,
-        deliverables: draft.deliverables,
-        status: "pending",
-        traceRefs: specRefs,
-        createdAt: now,
-        updatedAt: now,
-      });
-    });
+    const newTasks = draftsToTasks(drafts, baseIds, specRefs, initiative.id, now);
 
     const next: ProjectSnapshot = {
       ...snapshot,
@@ -974,6 +985,37 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     await persist(next);
     set({ snapshot: next });
     get().pushFeedback("Tasks", "done", `${newTasks.length} tasks`);
+    return newTasks.length;
+  },
+
+  async appendTasks(options) {
+    const initiative = await get().ensureActiveInitiative();
+    if (!initiative) return 0;
+    const { snapshot } = get();
+    if (!snapshot) return 0;
+    const view = initiativeSnapshot(snapshot, initiative.id);
+    // Append: informa as tasks existentes para a IA gerar apenas NOVAS.
+    const drafts = await generateTaskDrafts(view, options, {
+      scope: initiative.scope,
+      existingTitles: view.tasks.map((t) => t.title),
+    });
+    const now = nowIso();
+    // Inclui TODAS as tasks existentes nos baseIds (não substitui nada).
+    const baseIds = collectTraceables(snapshot).map((a) => a.id);
+    const specRefs = [
+      ...view.specifications.map((s) => s.id),
+      ...view.consolidatedSpecs.map((s) => s.id),
+    ];
+    const newTasks = draftsToTasks(drafts, baseIds, specRefs, initiative.id, now);
+
+    const next: ProjectSnapshot = {
+      ...snapshot,
+      tasks: [...snapshot.tasks, ...newTasks],
+      project: { ...snapshot.project, updatedAt: now },
+    };
+    await persist(next);
+    set({ snapshot: next });
+    get().pushFeedback("Tasks", "done", `+${newTasks.length} tasks`);
     return newTasks.length;
   },
 

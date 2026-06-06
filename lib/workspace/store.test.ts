@@ -183,6 +183,14 @@ describe("workspace store", () => {
     expect(count).toBe(2);
     const tasks = store().snapshot?.tasks ?? [];
     expect(tasks[1]?.dependencies).toEqual([tasks[0]?.id]);
+
+    // appendTasks acrescenta sem substituir (não regenera).
+    const added = await store().appendTasks({ apiKey: "x", provider: harnessProvider });
+    expect(added).toBe(2);
+    const after = store().snapshot?.tasks ?? [];
+    expect(after).toHaveLength(4);
+    // IDs únicos (continuam a numeração).
+    expect(new Set(after.map((t) => t.id)).size).toBe(4);
   });
 
   it("cria iniciativa com scope e marca o conhecimento com seu initiativeId", async () => {

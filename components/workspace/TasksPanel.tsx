@@ -13,25 +13,30 @@ import type { ProjectSnapshot } from "@/lib/domain/project";
 
 export function TasksPanel({ snapshot }: { snapshot: ProjectSnapshot }) {
   const generateTasks = useWorkspaceStore((s) => s.generateTasks);
-  const [busy, setBusy] = useState(false);
+  const appendTasks = useWorkspaceStore((s) => s.appendTasks);
+  const [busy, setBusy] = useState<null | "replace" | "append">(null);
   const [error, setError] = useState<string | null>(null);
   const hasKey = Boolean(getStoredKey());
 
-  async function run() {
+  async function run(mode: "replace" | "append") {
     const apiKey = getStoredKey();
     if (!apiKey) return;
-    setBusy(true);
+    setBusy(mode);
     setError(null);
     try {
-      await generateTasks({ apiKey });
+      if (mode === "append") await appendTasks({ apiKey });
+      else await generateTasks({ apiKey });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao gerar tasks.");
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
-  const noSpecs = snapshot.specifications.length === 0;
+  // Story/Feature usam spec consolidado; Product, a cascata por-tipo.
+  const noSpecs =
+    snapshot.specifications.length === 0 && snapshot.consolidatedSpecs.length === 0;
+  const hasTasks = snapshot.tasks.length > 0;
 
   return (
     <div className="space-y-5">
@@ -39,10 +44,22 @@ export function TasksPanel({ snapshot }: { snapshot: ProjectSnapshot }) {
         <p className="text-sm text-slate-500">
           Tasks executáveis derivadas das specs, com dependências e rastreabilidade.
         </p>
-        <Button onClick={run} disabled={!hasKey || busy || noSpecs}>
-          {busy && <Spinner className="h-4 w-4" />}
-          {snapshot.tasks.length > 0 ? "Regenerar tasks" : "Gerar tasks"}
-        </Button>
+        <div className="flex gap-2">
+          {hasTasks && (
+            <Button
+              variant="outline"
+              onClick={() => void run("append")}
+              disabled={!hasKey || busy !== null || noSpecs}
+            >
+              {busy === "append" && <Spinner className="h-4 w-4" />}
+              Gerar mais tasks
+            </Button>
+          )}
+          <Button onClick={() => void run("replace")} disabled={!hasKey || busy !== null || noSpecs}>
+            {busy === "replace" && <Spinner className="h-4 w-4" />}
+            {hasTasks ? "Regenerar tasks" : "Gerar tasks"}
+          </Button>
+        </div>
       </div>
 
       {!hasKey && (
