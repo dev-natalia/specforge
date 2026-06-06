@@ -32,6 +32,29 @@ describe("parseKnowledgeSuggestions", () => {
     expect(out[2]?.kind).toBe("constraint");
   });
 
+  it("mapeia a evidência preenchida pela IA na discovery", () => {
+    const raw = JSON.stringify({
+      suggestions: [
+        {
+          kind: "discovery",
+          title: "Usuários exportam manualmente",
+          summary: "copiam dados para planilhas",
+          category: "user",
+          evidence: "a descrição menciona 'copiar manualmente para o Excel'",
+        },
+      ],
+    });
+    const out = parseKnowledgeSuggestions(raw);
+    expect(out[0]?.data.evidence).toBe("a descrição menciona 'copiar manualmente para o Excel'");
+  });
+
+  it("evidência ausente vira string vazia (não inventa)", () => {
+    const raw = JSON.stringify({
+      suggestions: [{ kind: "discovery", title: "T", summary: "s", category: "user" }],
+    });
+    expect(parseKnowledgeSuggestions(raw)[0]?.data.evidence).toBe("");
+  });
+
   it("cai para categoria padrão quando inválida", () => {
     const raw = JSON.stringify({
       suggestions: [{ kind: "discovery", title: "T", category: "zzz" }],

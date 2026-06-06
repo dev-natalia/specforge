@@ -100,11 +100,12 @@ Extraia apenas o que está fundamentado na descrição. NÃO invente requisitos.
 
 REGRAS DE SAÍDA (obrigatórias):
 1. Responda EXCLUSIVAMENTE com um objeto JSON válido, sem texto antes ou depois, sem cercas de código.
-2. Formato: { "suggestions": [ { "kind", "title", "summary", "rationale", "category" } ] }.
+2. Formato: { "suggestions": [ { "kind", "title", "summary", "rationale", "category", "evidence" } ] }.
 3. "kind" ∈ ["discovery","decision","constraint"].
 4. "category": para discovery ∈ ["user","product","technical","architecture","business","process"]; para decision ∈ ["product","technical","architecture","process","business"]; para constraint pode omitir.
 5. "rationale" é obrigatório para decision (o porquê). "summary" descreve o item.
-6. Gere de 3 a 8 sugestões de alta qualidade. Prefira não sugerir a inventar.
+6. "evidence" (apenas para discovery): o que NA DESCRIÇÃO sustenta o aprendizado — cite o trecho ou sinal concreto. Se não houver base explícita, deixe vazio (NÃO invente evidência).
+7. Gere de 3 a 8 sugestões de alta qualidade. Prefira não sugerir a inventar.
 
 ${SECURITY_RULES}`;
 

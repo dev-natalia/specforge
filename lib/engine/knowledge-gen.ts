@@ -17,6 +17,8 @@ const suggestionSchema = z.object({
   summary: z.string().default(""),
   rationale: z.string().default(""),
   category: z.string().optional(),
+  // Para discovery: o que na descrição sustenta o aprendizado (a IA preenche).
+  evidence: z.string().default(""),
 });
 
 const DISCOVERY_CATEGORIES = new Set([
@@ -63,7 +65,7 @@ export function parseKnowledgeSuggestions(raw: string): KnowledgeSuggestion[] {
       suggestions.push({
         kind: "discovery",
         label: s.title,
-        data: { title: s.title, category, description: s.summary },
+        data: { title: s.title, category, description: s.summary, evidence: s.evidence },
       });
     } else if (s.kind === "decision") {
       const category = s.category && DECISION_CATEGORIES.has(s.category) ? s.category : "product";
