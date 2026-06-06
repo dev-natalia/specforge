@@ -11,6 +11,8 @@ import {
   setStoredKey,
   clearStoredKey,
   looksLikeAnthropicKey,
+  getKeyMode,
+  type KeyMode,
 } from "@/lib/byok";
 import { anthropicProvider } from "@/lib/providers/anthropic";
 
@@ -26,7 +28,9 @@ interface ApiKeySettingsProps {
 
 export function ApiKeySettings({ onChange }: ApiKeySettingsProps = {}) {
   const [storedKey, setStored] = useState<string | null>(null);
+  const [storedMode, setStoredMode] = useState<KeyMode>("local");
   const [input, setInput] = useState("");
+  const [mode, setMode] = useState<KeyMode>("local");
   const [testing, setTesting] = useState(false);
   const [message, setMessage] = useState<{
     kind: "ok" | "error";
@@ -35,6 +39,9 @@ export function ApiKeySettings({ onChange }: ApiKeySettingsProps = {}) {
 
   useEffect(() => {
     setStored(getStoredKey());
+    const m = getKeyMode();
+    setStoredMode(m);
+    setMode(m);
   }, []);
 
   async function handleSave() {
@@ -50,10 +57,17 @@ export function ApiKeySettings({ onChange }: ApiKeySettingsProps = {}) {
     setTesting(true);
     try {
       await anthropicProvider.validateKey(key);
-      setStoredKey(key);
+      setStoredKey(key, mode);
       setStored(key);
+      setStoredMode(mode);
       setInput("");
-      setMessage({ kind: "ok", text: "Chave validada e salva no navegador." });
+      setMessage({
+        kind: "ok",
+        text:
+          mode === "session"
+            ? "Chave validada e guardada só nesta sessão (some ao fechar a aba)."
+            : "Chave validada e guardada neste navegador.",
+      });
       onChange?.();
     } catch (err) {
       setMessage({
@@ -100,19 +114,65 @@ export function ApiKeySettings({ onChange }: ApiKeySettingsProps = {}) {
               A geração acontece <strong>direto do seu navegador</strong> para a
               Anthropic — a chave <strong>não passa por nenhum servidor nosso</strong>.
             </p>
+            <p>
+              💡 <strong>Dica de segurança:</strong> use uma chave com{" "}
+              <strong>limite de gasto</strong> e rotacione de tempos em tempos. Como toda
+              app que chama a IA do navegador, a chave fica legível pelo JavaScript deste
+              site — o modo <strong>&quot;só nesta sessão&quot;</strong> reduz a exposição.
+            </p>
           </div>
 
           {storedKey ? (
             <div className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2">
-              <span className="font-mono text-sm text-slate-700">
-                {maskKey(storedKey)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-sm text-slate-700">{maskKey(storedKey)}</span>
+                <Badge variant="neutral">
+                  {storedMode === "session" ? "só nesta sessão" : "permanente"}
+                </Badge>
+              </div>
               <Button variant="ghost" size="sm" onClick={handleRemove}>
                 Remover
               </Button>
             </div>
           ) : (
             <div className="space-y-3">
+              {/* Escolha de armazenamento */}
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-slate-700">Como guardar a chave?</span>
+                <label className="flex cursor-pointer gap-2 rounded-md border border-slate-200 p-3 text-sm">
+                  <input
+                    type="radio"
+                    name="key-mode"
+                    className="mt-0.5"
+                    checked={mode === "local"}
+                    onChange={() => setMode("local")}
+                  />
+                  <span>
+                    <span className="font-medium text-slate-800">Manter neste navegador</span>
+                    <span className="block text-xs text-slate-500">
+                      Persiste entre sessões — não precisa colar de novo a cada vez. Fica no
+                      localStorage deste navegador/dispositivo.
+                    </span>
+                  </span>
+                </label>
+                <label className="flex cursor-pointer gap-2 rounded-md border border-slate-200 p-3 text-sm">
+                  <input
+                    type="radio"
+                    name="key-mode"
+                    className="mt-0.5"
+                    checked={mode === "session"}
+                    onChange={() => setMode("session")}
+                  />
+                  <span>
+                    <span className="font-medium text-slate-800">Só nesta sessão</span>
+                    <span className="block text-xs text-slate-500">
+                      Mais seguro: a chave some ao <strong>fechar a aba</strong>. Você a recola na
+                      próxima vez. Nada fica gravado entre sessões.
+                    </span>
+                  </span>
+                </label>
+              </div>
+
               <Input
                 label="Cole sua chave"
                 type="password"
