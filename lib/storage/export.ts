@@ -9,6 +9,7 @@ import {
   type ConsolidatedSpec,
 } from "@/lib/domain/consolidated-spec";
 import type { KnowledgeObject } from "@/lib/domain/knowledge";
+import { MEMORY_FILENAME, renderMemoryFile } from "@/lib/domain/memory";
 
 export interface ExportFile {
   path: string;
@@ -119,6 +120,10 @@ export function exportProjectFiles(snapshot: ProjectSnapshot): ExportFile[] {
   if (snapshot.tasks.length > 0) {
     files.push({ path: `specs/001-${slug}/tasks.md`, content: renderTasks(snapshot) });
   }
+
+  // 6) Memória de decisões: semeada pelas decisões do conhecimento e mantida
+  // viva durante a implementação (o harness instrui o agente a registrar aqui).
+  files.push({ path: MEMORY_FILENAME, content: renderMemoryFile(snapshot) });
 
   return files;
 }

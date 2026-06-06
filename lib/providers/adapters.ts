@@ -4,6 +4,7 @@
 import type { Harness, AgentRules, Provider } from "@/lib/domain/harness";
 import { HARNESS_LAYERS } from "@/lib/domain/harness";
 import type { Project } from "@/lib/domain/project";
+import { memoryProtocolSection } from "@/lib/domain/memory";
 
 const LAYER_TITLE: Record<(typeof HARNESS_LAYERS)[number], string> = {
   identity: "Identidade",
@@ -38,6 +39,10 @@ function renderBody(harness: Harness, agentRules: AgentRules | undefined): strin
       "## Proibido\n\n" + harness.prohibited.map((p) => `- ${p}`).join("\n"),
     );
   }
+
+  // Protocolo de memória: o harness obriga registrar toda decisão maior em
+  // MEMORY.md (artefato incluído no export) usando o template canônico.
+  parts.push(memoryProtocolSection());
 
   if (harness.traceRefs.length > 0) {
     parts.push(`---\n\n_Rastreabilidade: ${harness.traceRefs.join(", ")}_`);

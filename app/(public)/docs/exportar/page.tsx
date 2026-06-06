@@ -25,7 +25,8 @@ export default function ExportDocsPage() {
 ├─ CLAUDE.md                   # adapter Claude
 ├─ .cursor/rules               # adapter Cursor
 ├─ GPT_INSTRUCTIONS.md         # adapter GPT
-└─ GEMINI_INSTRUCTIONS.md      # adapter Gemini`}</CodeBlock>
+├─ GEMINI_INSTRUCTIONS.md      # adapter Gemini
+└─ MEMORY.md                   # decisões + tarefas realizadas (mantida viva)`}</CodeBlock>
 
       <H2 id="usar">Como usar no repositório</H2>
       <ol className="list-decimal space-y-2.5 pl-5 text-slate-600">
@@ -43,6 +44,12 @@ export default function ExportDocsPage() {
           <strong>Use as specs como fonte de verdade.</strong> Se algo estiver fora,
           ajuste o conhecimento no SpecForge e regenere — é mais barato corrigir o
           documento do que o código.
+        </li>
+        <li>
+          <strong>Registre no <code>MEMORY.md</code>.</strong> O harness obriga o
+          agente a gravar ali toda decisão maior (arquitetura, contratos, segurança,
+          tradeoffs) e toda tarefa realizada, usando os modelos de entrada incluídos
+          — preserva o racional e o histórico, evitando drift ao longo da implementação.
         </li>
       </ol>
 

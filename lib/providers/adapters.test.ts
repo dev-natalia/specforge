@@ -57,6 +57,14 @@ describe("renderArtifact", () => {
     expect(out).toContain("DEC-001");
   });
 
+  it("inclui o protocolo de Memória do Projeto com os modelos de entrada", () => {
+    const out = renderArtifact("claude", harness, agentRules, project);
+    expect(out).toContain("## Memória do Projeto (MEMORY.md)");
+    expect(out).toContain("DEVEM ser registradas em `MEMORY.md`");
+    expect(out).toContain("## [DEC-XXX] Título curto da decisão");
+    expect(out).toContain("## [TASK-XXX] Título curto da tarefa");
+  });
+
   it("usa cabeçalho específico por provider", () => {
     expect(renderArtifact("cursor", harness, agentRules, project)).toContain("Regras do Cursor");
     expect(renderArtifact("gpt", harness, agentRules, project)).toContain("GPT — Instruções");

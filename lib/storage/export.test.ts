@@ -52,6 +52,32 @@ describe("export/import round-trip", () => {
     expect(paths).toContain("specforge.json");
     expect(paths).toContain("knowledge/discovery/DISC-001.md");
     expect(paths).toContain("specs/001-meu-app/requirements.md");
+    expect(paths).toContain("MEMORY.md");
+  });
+
+  it("semeia o MEMORY.md com as decisões do conhecimento", () => {
+    const snapshot = makeSnapshot();
+    snapshot.knowledge.push({
+      kind: "decision",
+      id: "DEC-001",
+      title: "Usar BYOK",
+      category: "product",
+      context: "Sem backend.",
+      decision: "Chave fica no navegador.",
+      rationale: "Privacidade e custo.",
+      alternatives: ["Proxy server"],
+      tradeoffs: "",
+      consequences: "",
+      version: 1,
+      traceRefs: ["DISC-001"],
+      createdAt: now,
+      updatedAt: now,
+    });
+    const memory = exportProjectFiles(snapshot).find((f) => f.path === "MEMORY.md");
+    expect(memory).toBeDefined();
+    expect(memory!.content).toContain("# MEMORY.md");
+    expect(memory!.content).toContain("## [DEC-001] Usar BYOK");
+    expect(memory!.content).toContain("Privacidade e custo.");
   });
 
   it("reimporta o snapshot a partir do specforge.json", () => {
