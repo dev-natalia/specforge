@@ -2,7 +2,7 @@
 
 // Shell do Workspace knowledge-first (Fase 1). Abas por tipo de conhecimento;
 // painel de edição inline; persistência automática via store (IndexedDB).
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useWorkspaceStore } from "@/lib/workspace/store";
 import { downloadProjectZip } from "@/lib/workspace/download";
@@ -70,10 +70,17 @@ export function Workspace({ projectId }: { projectId: string }) {
   const [saving, setSaving] = useState(false);
   // Acordeão da lista de conhecimento: no máximo um card expandido por vez.
   const [openCardId, setOpenCardId] = useState<string | null>(null);
+  // Container do formulário inline — usado para rolar até ele ao editar/criar.
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void openProject(projectId);
   }, [projectId, openProject]);
+
+  // Ao abrir o formulário (editar ou adicionar), rola a tela até ele.
+  useEffect(() => {
+    if (editor) formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [editor]);
 
   // View recortada para a iniciativa ativa: abas/painéis operam só sobre ela.
   const view = useMemo(
@@ -241,7 +248,7 @@ export function Workspace({ projectId }: { projectId: string }) {
       ) : tab === "productDna" ? (
         <div className="space-y-4">
           {editor?.kind === "productDna" ? (
-            <div className="rounded-lg border border-slate-200 bg-white p-5">{renderForm()}</div>
+            <div ref={formRef} className="rounded-lg border border-slate-200 bg-white p-5">{renderForm()}</div>
           ) : productDna ? (
             <KnowledgeCard
               item={productDna}
@@ -269,7 +276,7 @@ export function Workspace({ projectId }: { projectId: string }) {
           </div>
 
           {editor && editor.kind === tab && (
-            <div className="rounded-lg border border-slate-200 bg-white p-5">{renderForm()}</div>
+            <div ref={formRef} className="rounded-lg border border-slate-200 bg-white p-5">{renderForm()}</div>
           )}
 
           {items.length === 0 && !editor && (
