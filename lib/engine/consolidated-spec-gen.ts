@@ -42,7 +42,7 @@ export async function generateConsolidatedSpec(
     {
       system: consolidatedSpecSystemPrompt(format),
       prompt: buildConsolidatedSpecUserPrompt(format, intent, context.text),
-      maxTokens: 8000,
+      maxTokens: 32000,
     },
     { apiKey: options.apiKey },
   );

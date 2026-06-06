@@ -59,12 +59,26 @@ export const anthropicProvider: GenerationProvider = {
     options: GenerationOptions,
   ): Promise<string> {
     try {
-      const message = await getClient(options.apiKey).messages.create({
+      // Streaming: evita timeout HTTP em saídas grandes (a Anthropic recomenda
+      // stream para max_tokens alto) e é seguro para chamadas pequenas também.
+      const stream = getClient(options.apiKey).messages.stream({
         model: MODEL_ID,
         max_tokens: request.maxTokens ?? DEFAULT_MAX_TOKENS,
         system: request.system,
         messages: [{ role: "user", content: request.prompt }],
       });
+      const message = await stream.finalMessage();
+
+      // Truncamento: a IA bateu no teto de tokens e a resposta veio cortada.
+      // Falhar é melhor que salvar um artefato incompleto silenciosamente.
+      if (message.stop_reason === "max_tokens") {
+        throw new AppError(
+          "AI_ERROR",
+          "A IA atingiu o limite de tokens e a resposta foi truncada. " +
+            "Tente reduzir o escopo desta geração ou gerar em partes.",
+        );
+      }
+
       return message.content
         .filter((block): block is Anthropic.TextBlock => block.type === "text")
         .map((block) => block.text)
@@ -75,9 +89,17 @@ export const anthropicProvider: GenerationProvider = {
   },
 
   async validateKey(apiKey: string): Promise<void> {
-    await this.generateText(
-      { system: "Responda apenas: ok.", prompt: "ok", maxTokens: 1 },
-      { apiKey },
-    );
+    // Validação mínima: não passa por generateText para não disparar a
+    // verificação de truncamento (max_tokens: 1 sempre pararia em "max_tokens").
+    try {
+      await getClient(apiKey).messages.create({
+        model: MODEL_ID,
+        max_tokens: 1,
+        system: "Responda apenas: ok.",
+        messages: [{ role: "user", content: "ok" }],
+      });
+    } catch (error) {
+      normalizeError(error);
+    }
   },
 };

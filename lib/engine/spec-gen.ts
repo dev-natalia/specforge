@@ -52,7 +52,7 @@ export async function generateSpecContent(
         context.text,
         predecessors.map((p) => ({ type: p.type, content: p.content })),
       ),
-      maxTokens: 8000,
+      maxTokens: 32000,
     },
     { apiKey: options.apiKey },
   );
