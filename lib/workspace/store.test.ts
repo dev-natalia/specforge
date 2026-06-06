@@ -45,6 +45,22 @@ describe("workspace store", () => {
     expect(discId2).toBe("DISC-002");
   });
 
+  it("import nunca sobrescreve um projeto existente (ID em colisão vira novo)", async () => {
+    await store().createProject("Original"); // PROJ-001
+    const now = "2026-06-05T00:00:00.000Z";
+    const envelope = JSON.stringify({
+      schemaVersion: 1,
+      snapshot: {
+        project: { id: "PROJ-001", name: "Importado", slug: "importado", description: "", createdAt: now, updatedAt: now },
+      },
+    });
+    const newId = await store().importProject(envelope);
+    expect(newId).not.toBe("PROJ-001");
+    expect(store().projects).toHaveLength(2);
+    // O original permanece intacto.
+    expect(store().projects.find((p) => p.id === "PROJ-001")?.name).toBe("Original");
+  });
+
   it("persiste entre reaberturas (local-first)", async () => {
     const id = await store().createProject("Persistente");
     await store().openProject(id);

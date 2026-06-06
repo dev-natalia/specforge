@@ -303,7 +303,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   async importProject(jsonText) {
     const imported = importProjectFromJson(jsonText);
-    // Reusa o ID do export; se já existir, sobrescreve (round-trip).
+    // Segurança: NUNCA sobrescrever um projeto existente. Se o ID do export já
+    // existe, gera um novo (importa como cópia). O grafo interno usa IDs de
+    // artefato (DISC-/DEC-/SPEC-…), independentes do ID do projeto.
+    const existing = await repoListProjects();
+    if (existing.some((p) => p.id === imported.project.id)) {
+      imported.project.id = nextId("project", existing.map((p) => p.id));
+    }
     imported.project.updatedAt = nowIso();
     await persist(imported);
     await get().refreshProjects();

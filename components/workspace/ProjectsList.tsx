@@ -47,6 +47,12 @@ export function ProjectsList() {
     setBusy(true);
     setError(null);
     try {
+      // Limite de tamanho: evita travar a aba com um arquivo enorme.
+      const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+      if (file.size > MAX_BYTES) {
+        setError("Arquivo muito grande (máximo 10 MB).");
+        return;
+      }
       const text = await file.text();
       const id = await importProject(text);
       router.push(`/projects/workspace?id=${id}`);
