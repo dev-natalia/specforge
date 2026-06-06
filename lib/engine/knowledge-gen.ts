@@ -63,7 +63,7 @@ export function parseKnowledgeSuggestions(raw: string): KnowledgeSuggestion[] {
       suggestions.push({
         kind: "discovery",
         label: s.title,
-        data: { title: s.title, category, description: s.summary, source: "Extração" },
+        data: { title: s.title, category, description: s.summary },
       });
     } else if (s.kind === "decision") {
       const category = s.category && DECISION_CATEGORIES.has(s.category) ? s.category : "product";

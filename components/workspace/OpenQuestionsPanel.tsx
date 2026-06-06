@@ -55,7 +55,6 @@ export function OpenQuestionsPanel({ snapshot }: { snapshot: ProjectSnapshot }) 
           title: question,
           category: "product",
           description: answer,
-          source: "Pergunta em aberto",
         });
       }
       setResolved((prev) => new Set(prev).add(question));

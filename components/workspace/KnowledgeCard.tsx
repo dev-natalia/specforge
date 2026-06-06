@@ -4,11 +4,8 @@
 // Colapsável: por padrão mostra só o cabeçalho (id, badge, título). Clicar no
 // título expande os detalhes — mantém a lista limpa quando há muito conteúdo.
 import { useState } from "react";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { KnowledgeObject } from "@/lib/domain/knowledge";
-
-const CONFIDENCE_LABEL: Record<string, string> = { low: "Baixa", medium: "Média", high: "Alta" };
 
 function Refs({ refs }: { refs: string[] }) {
   if (refs.length === 0) return null;
@@ -60,9 +57,6 @@ export function KnowledgeCard({
               ▸
             </span>
             <span className="font-mono text-xs text-slate-400">{item.id}</span>
-            {item.kind === "discovery" && (
-              <Badge variant="neutral">{CONFIDENCE_LABEL[item.confidence]}</Badge>
-            )}
           </div>
           <h4 className="mt-1 truncate font-medium text-slate-900">{title}</h4>
         </button>

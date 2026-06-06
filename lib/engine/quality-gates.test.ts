@@ -57,7 +57,7 @@ describe("runKnowledgeGates", () => {
     expect(report.outcome).toBe("revision");
   });
 
-  it("passa quando há DNA, decisão com racional e discovery com fonte", () => {
+  it("passa quando há DNA, decisão com racional e discovery com evidência", () => {
     const snapshot = emptySnapshot(project);
     const dna: ProductDna = {
       kind: "productDna",
@@ -82,10 +82,8 @@ describe("runKnowledgeGates", () => {
       title: "d",
       category: "user",
       description: "",
-      source: "entrevista",
-      evidence: "",
+      evidence: "entrevista",
       implications: "",
-      confidence: "low",
       traceRefs: [],
       createdAt: now,
       updatedAt: now,

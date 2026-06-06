@@ -22,7 +22,6 @@ import {
   DecisionForm,
   ConstraintForm,
   ProductDnaForm,
-  type RefOption,
 } from "@/components/workspace/forms";
 import { initiativeSnapshot } from "@/lib/domain/project";
 import type { KnowledgeObject, KnowledgeKind } from "@/lib/domain/knowledge";
@@ -82,14 +81,6 @@ export function Workspace({ projectId }: { projectId: string }) {
     [snapshot, activeInitiativeId],
   );
 
-  const refOptions: RefOption[] = useMemo(() => {
-    if (!view) return [];
-    return view.knowledge.map((item) => ({
-      id: item.id,
-      label: "title" in item ? item.title : "Product DNA",
-    }));
-  }, [view]);
-
   if (loading && !snapshot) {
     return (
       <div className="flex items-center gap-2 text-slate-500">
@@ -137,7 +128,6 @@ export function Workspace({ projectId }: { projectId: string }) {
     if (!editor) return null;
     const common = {
       initial: editor.initial,
-      refOptions,
       submitting: saving,
       onCancel: () => setEditor(null),
       onSubmit: handleSubmit,

@@ -16,7 +16,6 @@ describe("knowledge schemas", () => {
       createdAt: now,
       updatedAt: now,
     });
-    expect(parsed.confidence).toBe("low");
     expect(parsed.traceRefs).toEqual([]);
     expect(parsed.description).toBe("");
   });

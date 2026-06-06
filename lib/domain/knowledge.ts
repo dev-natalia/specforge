@@ -29,10 +29,8 @@ export const discoverySchema = traceableSchema.merge(timestampsSchema).extend({
   title: z.string().min(1),
   category: discoveryCategorySchema,
   description: z.string().default(""),
-  source: z.string().default(""),
   evidence: z.string().default(""),
   implications: z.string().default(""),
-  confidence: confidenceSchema.default("low"),
 });
 export type Discovery = z.infer<typeof discoverySchema>;
 

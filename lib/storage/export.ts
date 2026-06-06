@@ -30,12 +30,11 @@ function renderKnowledge(item: KnowledgeObject): ExportFile {
   switch (item.kind) {
     case "discovery":
       lines.push(
-        `**Categoria:** ${item.category} · **Confiança:** ${item.confidence}`,
+        `**Categoria:** ${item.category}`,
         "",
         item.description,
         item.evidence ? `\n**Evidência:** ${item.evidence}` : "",
         item.implications ? `\n**Implicações:** ${item.implications}` : "",
-        item.source ? `\n**Fonte:** ${item.source}` : "",
       );
       break;
     case "decision":

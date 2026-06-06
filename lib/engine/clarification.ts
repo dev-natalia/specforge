@@ -135,7 +135,6 @@ export function clarificationToKnowledge(clar: Clarification): KnowledgeDraft | 
       title: clar.question,
       category: "product",
       description: clar.answer,
-      source: "Clarificação",
       implications: clar.impact,
       traceRefs: refs,
     },

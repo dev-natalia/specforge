@@ -16,14 +16,13 @@ export const KNOWLEDGE_ITEMS: ItemDoc[] = [
       { name: "description", desc: "o que foi aprendido" },
       { name: "evidence", desc: "o que sustenta o aprendizado" },
       { name: "implications", desc: "por que isso importa" },
-      { name: "confidence", desc: "low / medium / high" },
     ],
     example: `DISC-014 — Usuários ignoram configurações avançadas
-Categoria: user · Confiança: high
+Categoria: user
 Descrição: em 8 de 10 sessões, ninguém abriu "Avançado".
 Evidência: testes de usabilidade (jun/2026).
 Implicações: padrões devem funcionar sem configuração.`,
-    tip: "Uma discovery sem evidência é só uma opinião. Registre a fonte.",
+    tip: "Uma discovery sem evidência é só uma opinião. Registre o que a sustenta.",
   },
   {
     id: "decision",

@@ -92,16 +92,11 @@ export function runKnowledgeGates(snapshot: ProjectSnapshot, scope?: Scope): Qua
     gate("decision-rationale", "Racional das decisões", decisionIssues, "revision"),
   );
 
-  // Discovery Evidence — discoveries têm fonte ou evidência.
+  // Discovery Evidence — discoveries têm evidência que as sustente.
   const discoveryIssues: GateIssue[] = snapshot.knowledge
     .filter((k) => k.kind === "discovery")
-    .filter(
-      (k) =>
-        k.kind === "discovery" &&
-        k.source.trim() === "" &&
-        k.evidence.trim() === "",
-    )
-    .map((k) => ({ message: `${k.id} sem fonte/evidência.`, id: k.id }));
+    .filter((k) => k.kind === "discovery" && k.evidence.trim() === "")
+    .map((k) => ({ message: `${k.id} sem evidência.`, id: k.id }));
   results.push(
     gate("discovery-evidence", "Evidência das discoveries", discoveryIssues, "warning"),
   );
