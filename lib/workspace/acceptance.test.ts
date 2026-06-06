@@ -9,7 +9,9 @@ import { _resetDbForTests } from "@/lib/storage/db";
 import {
   forbiddenArtifacts,
   requiredArtifacts,
+  isSpecAllowed,
 } from "@/lib/domain/artifact-matrix";
+import { SPEC_CASCADE } from "@/lib/domain/specs";
 import type { Scope } from "@/lib/domain/scope";
 import type { GenerationProvider } from "@/lib/providers/provider";
 
@@ -55,7 +57,6 @@ beforeEach(() => {
     snapshot: null,
     activeInitiativeId: null,
     feedback: [],
-    run: null,
     loading: false,
     error: null,
   });
@@ -74,10 +75,27 @@ async function newInitiative(name: string, scope: Scope, intent: string): Promis
   });
 }
 
+// Orquestra a geração completa do scope ativo (specs → harness → tasks →
+// artefatos), espelhando o pipeline por scope.
+async function runGeneration(): Promise<void> {
+  const opts = { apiKey: "x", provider: generationProvider() };
+  const scope = store().activeInitiative()?.scope;
+  if (scope === "product") {
+    for (const type of SPEC_CASCADE) {
+      if (isSpecAllowed("product", type)) await store().generateSpecification(type, opts);
+    }
+  } else {
+    await store().generateConsolidatedSpec(opts);
+  }
+  await store().generateHarness(opts);
+  await store().generateTasks(opts);
+  await store().generateProviderArtifacts(["claude", "cursor", "gpt", "gemini"]);
+}
+
 describe("Example Pack — geração por scope (022)", () => {
   it("Story: gera spec consolidada + harness + tasks + artefatos; sem arquitetura/segurança", async () => {
     await newInitiative("Export CSV", "story", "Adicionar botão de exportar resultados em CSV");
-    await store().generateAll({ apiKey: "x", provider: generationProvider() });
+    await runGeneration();
 
     const snap = store().snapshot!;
     expect(snap.consolidatedSpecs).toHaveLength(1);
@@ -92,7 +110,7 @@ describe("Example Pack — geração por scope (022)", () => {
 
   it("Feature: gera spec consolidada (feature) + harness + tasks + artefatos", async () => {
     await newInitiative("OAuth Google", "feature", "Implementar autenticação com Google");
-    await store().generateAll({ apiKey: "x", provider: generationProvider() });
+    await runGeneration();
 
     const snap = store().snapshot!;
     expect(snap.consolidatedSpecs[0]?.format).toBe("feature");
@@ -103,7 +121,7 @@ describe("Example Pack — geração por scope (022)", () => {
 
   it("Product: gera a cascata de specs por-tipo (sem consolidado) + harness + tasks", async () => {
     await newInitiative("CRM", "product", "Construir uma plataforma de CRM");
-    await store().generateAll({ apiKey: "x", provider: generationProvider() });
+    await runGeneration();
 
     const snap = store().snapshot!;
     expect(snap.consolidatedSpecs).toHaveLength(0);

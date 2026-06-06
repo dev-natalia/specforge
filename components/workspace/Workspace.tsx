@@ -12,7 +12,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { KnowledgeCard } from "@/components/workspace/KnowledgeCard";
 import { InitiativesBar } from "@/components/workspace/InitiativesBar";
 import { GenerationFeedback } from "@/components/workspace/GenerationFeedback";
-import { ScopePipeline } from "@/components/workspace/ScopePipeline";
+import { GenerationStatus } from "@/components/workspace/GenerationStatus";
 import { ClarifyPanel } from "@/components/workspace/ClarifyPanel";
 import { SpecsPanel } from "@/components/workspace/SpecsPanel";
 import { HarnessPanel } from "@/components/workspace/HarnessPanel";
@@ -192,8 +192,8 @@ export function Workspace({ projectId }: { projectId: string }) {
         ) : null
       ) : (
         <div className="space-y-6">
-      {/* Pipeline do scope: gerar tudo numa ação */}
-      <ScopePipeline snapshot={view} />
+      {/* Status: arquivos geráveis da iniciativa (verde quando gerados) */}
+      <GenerationStatus snapshot={view} />
 
       {/* Feedback de geração (atividade + validação) */}
       <GenerationFeedback />

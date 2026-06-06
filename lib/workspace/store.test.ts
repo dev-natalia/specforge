@@ -17,7 +17,6 @@ beforeEach(() => {
     snapshot: null,
     activeInitiativeId: null,
     feedback: [],
-    run: null,
     loading: false,
     error: null,
   });
@@ -308,48 +307,6 @@ describe("workspace store", () => {
     expect(history[0]).toEqual(
       expect.objectContaining({ from: "story", to: "feature" }),
     );
-  });
-
-  it("orquestra 'gerar tudo' para Story (consolidado → harness → tasks → artefatos)", async () => {
-    const provider: GenerationProvider = {
-      id: "fake",
-      capabilities: { id: "fake", label: "Fake", models: [], textGeneration: true },
-      async generateText(req) {
-        if (req.system.includes("Harness Engineering")) {
-          return JSON.stringify({ layers: { identity: "x" }, prohibited: [], agentRules: ["r"] });
-        }
-        if (req.system.includes("tasks de implementação")) {
-          return JSON.stringify({ tasks: [{ title: "T1", category: "feature", dependsOn: [] }] });
-        }
-        return "# Story Specification\n\nConteúdo.";
-      },
-      async validateKey() {},
-    };
-    const id = await store().createProject("Tudo");
-    await store().openProject(id);
-    await store().createInitiative("Export", "story", "Botão de export");
-    await store().addKnowledge("discovery", { title: "X", category: "user" });
-
-    await store().generateAll({ apiKey: "x", provider });
-
-    const snap = store().snapshot;
-    expect(snap?.consolidatedSpecs).toHaveLength(1);
-    expect(snap?.harnesses).toHaveLength(1);
-    expect((snap?.tasks.length ?? 0)).toBeGreaterThan(0);
-    expect(snap?.providerArtifacts).toHaveLength(4);
-    // Tasks rastreiam o spec consolidado (sem órfãos).
-    expect(snap?.tasks[0]?.traceRefs).toContain("CSPEC-001");
-    expect(store().invariantIssues()).toHaveLength(0);
-    expect(store().feedback.some((e) => e.label === "Pipeline concluído")).toBe(true);
-
-    // Timeline: run concluído com todos os passos done.
-    const run = store().run;
-    expect(run?.finishedAt).toBeTruthy();
-    expect(run?.steps.every((s) => s.status === "done")).toBe(true);
-    // Story → especificação consolidada + harness + tasks + artefatos = 4 passos.
-    expect(run?.steps).toHaveLength(4);
-    store().clearRun();
-    expect(store().run).toBeNull();
   });
 
   it("emite feedback de geração (done e skipped)", async () => {

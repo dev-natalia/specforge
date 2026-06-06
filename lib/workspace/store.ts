@@ -55,7 +55,6 @@ import {
 import {
   specificationSchema,
   specPredecessors,
-  SPEC_CASCADE,
   SPEC_LABEL,
   type SpecType,
   type SpecStatus,
@@ -87,9 +86,6 @@ import {
   feedbackEvent,
   type GenerationEvent,
   type FeedbackStatus,
-  type GenerationRun,
-  type RunStep,
-  type RunStatus,
 } from "@/lib/workspace/feedback";
 
 function nowIso(): string {
@@ -166,9 +162,6 @@ interface WorkspaceState {
   feedback: GenerationEvent[];
   pushFeedback: (label: string, status: FeedbackStatus, detail?: string) => void;
   clearFeedback: () => void;
-  // Timeline do orquestrador (doc 018): passos planejados + status ao vivo.
-  run: GenerationRun | null;
-  clearRun: () => void;
 
   refreshProjects: () => Promise<void>;
   createProject: (name: string, description?: string) => Promise<string>;
@@ -231,10 +224,6 @@ interface WorkspaceState {
   // Gera tasks ADICIONAIS, complementares às existentes (append, sem substituir).
   appendTasks: (options: EngineOptions) => Promise<number>;
 
-  // Orquestrador (doc 017): roda o pipeline completo do scope numa ação só —
-  // specs (consolidada p/ story/feature, cascata p/ product) → harness → tasks
-  // → artefatos de provider. Assume que clarificação/conhecimento já existe.
-  generateAll: (options: EngineOptions) => Promise<void>;
 
   invariantIssues: () => ProjectInvariantIssue[];
   qualityReport: () => QualityReport | null;
@@ -252,7 +241,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   loading: false,
   error: null,
   feedback: [],
-  run: null,
 
   pushFeedback(label, status, detail) {
     set((s) => ({ feedback: appendFeedback(s.feedback, feedbackEvent(label, status, detail)) }));
@@ -260,10 +248,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   clearFeedback() {
     set({ feedback: [] });
-  },
-
-  clearRun() {
-    set({ run: null });
   },
 
   async refreshProjects() {
@@ -1017,66 +1001,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     set({ snapshot: next });
     get().pushFeedback("Tasks", "done", `+${newTasks.length} tasks`);
     return newTasks.length;
-  },
-
-  async generateAll(options) {
-    const initiative = await get().ensureActiveInitiative();
-    if (!initiative) return;
-    const scope = initiative.scope;
-
-    // Passos planejados (timeline): specs (consolidada ou cascata) + harness +
-    // tasks + artefatos. Cada passo ganha status ao vivo (doc 018).
-    const specSteps: { key: string; label: string; type: SpecType | null }[] =
-      scope === "product"
-        ? SPEC_CASCADE.filter((t) => isSpecAllowed(scope, t)).map((t) => ({
-            key: `spec:${t}`,
-            label: `Spec ${SPEC_LABEL[t]}`,
-            type: t,
-          }))
-        : [{ key: "spec", label: "Especificação consolidada", type: null }];
-
-    const steps: RunStep[] = [
-      ...specSteps.map((s) => ({ key: s.key, label: s.label, status: "pending" as RunStatus })),
-      { key: "harness", label: "Harness", status: "pending" },
-      { key: "tasks", label: "Tasks", status: "pending" },
-      { key: "artifacts", label: "Artefatos de provider", status: "pending" },
-    ];
-    set({ run: { scope, steps, startedAt: nowIso() } });
-    get().pushFeedback("Gerar tudo do scope", "info", scope);
-
-    const setStep = (key: string, status: RunStatus) =>
-      set((s) =>
-        s.run
-          ? { run: { ...s.run, steps: s.run.steps.map((st) => (st.key === key ? { ...st, status } : st)) } }
-          : {},
-      );
-
-    const runStep = async (key: string, fn: () => Promise<unknown>) => {
-      setStep(key, "running");
-      try {
-        await fn();
-        setStep(key, "done");
-      } catch (err) {
-        setStep(key, "failed");
-        set((s) => (s.run ? { run: { ...s.run, finishedAt: nowIso() } } : {}));
-        throw err;
-      }
-    };
-
-    for (const step of specSteps) {
-      const type = step.type;
-      await runStep(step.key, () =>
-        type === null ? get().generateConsolidatedSpec(options) : get().generateSpecification(type, options),
-      );
-    }
-    await runStep("harness", () => get().generateHarness(options));
-    await runStep("tasks", () => get().generateTasks(options));
-    await runStep("artifacts", () =>
-      get().generateProviderArtifacts(["claude", "cursor", "gpt", "gemini"]),
-    );
-
-    set((s) => (s.run ? { run: { ...s.run, finishedAt: nowIso() } } : {}));
-    get().pushFeedback("Pipeline concluído", "done", `scope ${scope}`);
   },
 
   invariantIssues() {
